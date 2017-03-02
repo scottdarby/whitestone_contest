@@ -1,0 +1,25 @@
+{
+  "name": "ScottDarbyAudioReactiveContest",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "node ./node_modules/webpack/bin/webpack.js --progress --hide-modules --optimize-minimize && ./node_modules/webpack-dev-server/bin/webpack-dev-server.js",
+    "dev": "node ./node_modules/webpack/bin/webpack.js --progress --color --watch --hide-modules"
+  },
+  "author": "Scott <info@scottdarby.com>",
+  "dependencies": {
+    "three": "^0.84.0",
+    "three-orbit-controls": "^82.1.0",
+    "stats.js": "^0.17.0"
+  },
+  "devDependencies": {
+    "babel-core": "^6.23.1",
+    "babel-loader": "^6.3.2",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-polyfill": "^6.23.0",
+    "babel-preset-es2015": "^6.22.0",
+    "file-loader": "^0.10.1",
+    "webpack": "^2.2.1",
+    "webpack-dev-server": "^2.4.1"
+  }
+}
