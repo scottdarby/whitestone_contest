@@ -6,7 +6,7 @@ My entry for the Whitestone Audio Reactive Coding Contest featuring music by Mik
 
 ## Description
 
-A generative webGL animation built with THREE.js which builds structures with sound
+A generative webGL animation built with THREE.js which builds structures with sound. Feel free to pan and zoom around the scene.
 
 ## Concept
 
