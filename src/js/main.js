@@ -37,7 +37,7 @@ var OrbitControls = OrbitContructor(THREE);
         sound = null,
         movementRate = 0,
         notResetCount = [],
-        notResetThreshold = 60,
+        notResetThreshold = 70,
         stats = null,
         pallete = [
             [249, 107, 107],
@@ -99,7 +99,7 @@ var OrbitControls = OrbitContructor(THREE);
 
         // camera
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
-        camera.position.set(0, 0, 2.5);
+        camera.position.set(0, 0, 2.3);
         scene.add(camera);
 
         // controls
@@ -392,66 +392,54 @@ var OrbitControls = OrbitContructor(THREE);
         }
         pointsMap[channel] = objectPoints;
 
-    //    if (
-    //        currentFrame > 100 &&
-    //        sound.isPlaying &&
-        //    stats.getFPS() > 0 && stats.getFPS() < 15
-//        ) {
+        let growthPoint = Math.ceil(movementRate * 0.053);
 
-        //    createInitialShape(channel);
+        if (growthPoint > 15) {
+            growthPoint = 15;
+        }
 
-//        } else {
+        if (currentFrame != 0 && currentFrame % growthPoint == 0) {
 
-            let growthPoint = Math.ceil(movementRate * 0.053);
-
-            if (growthPoint > 15) {
-                growthPoint = 15;
+            if (typeof choose[channel] == 'undefined') {
+                choose[channel] = [];
             }
 
-            if (currentFrame != 0 && currentFrame % growthPoint == 0) {
+            if (typeof choose[channel][currentFrame] == 'undefined') {
+                choose[channel][currentFrame] = Math.ceil((Math.random() * allFaces[channel].length-1) * 0.5);
+            }
 
-                if (typeof choose[channel] == 'undefined') {
-                    choose[channel] = [];
-                }
+            let newFace = allFaces[channel][allFaces[channel].length-choose[channel][currentFrame]];
 
-                if (typeof choose[channel][currentFrame] == 'undefined') {
-                    choose[channel][currentFrame] = Math.ceil((Math.random() * allFaces[channel].length-1) * 0.5);
-                }
+            if (typeof newFace == 'undefined') {
+                initFaces[channel] = allFaces[channel][allFaces[channel].length-1];
+            } else {
+                initFaces[channel] = newFace;
+            }
 
-                let newFace = allFaces[channel][allFaces[channel].length-choose[channel][currentFrame]];
+            if (typeof notResetCount[channel] == 'undefined') {
+                notResetCount[channel] = 0;
+            }
 
-                if (typeof newFace == 'undefined') {
-                    initFaces[channel] = allFaces[channel][allFaces[channel].length-1];
-                } else {
-                    initFaces[channel] = newFace;
-                }
+            // restart ?
+            if (notResetCount[channel] > notResetThreshold) {
 
-                if (typeof notResetCount[channel] == 'undefined') {
-                    notResetCount[channel] = 0;
-                }
-
-                // restart ?
-                if (notResetCount[channel] > notResetThreshold) {
-
-                    notResetCount[channel] = 0;
-                    createInitialShape(channel);
-
-                } else {
-
-                    if (choose[channel][currentFrame] % 20 == 0) {
-                        notResetCount[channel] = 0;
-                        createInitialShape(channel);
-                    } else {
-                        notResetCount[channel]++;
-                    }
-
-                }
+                notResetCount[channel] = 0;
+                createInitialShape(channel);
 
             } else {
-                initFaces[channel] = allFaces[channel][allFaces[channel].length-1];
+
+                if (choose[channel][currentFrame] % 20 == 0) {
+                    notResetCount[channel] = 0;
+                    createInitialShape(channel);
+                } else {
+                    notResetCount[channel]++;
+                }
+
             }
 
-    //    }
+        } else {
+            initFaces[channel] = allFaces[channel][allFaces[channel].length-1];
+        }
 
     }
 
@@ -460,8 +448,6 @@ var OrbitControls = OrbitContructor(THREE);
         movementRate += 0.2;
 
         currentFrame++;
-
-        //stats.update();
 
         if (sound.isPlaying) {
 
