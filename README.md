@@ -12,6 +12,10 @@ The audio input spectrum controls the shape of the generated geometry. The geome
 
 Although the app will react to any input sound, I tried to reflect the feel of Mike Gao's track through choice of colour and movement speed.
 
+## License
+Copyright (c) Scott Darby 2017
+Contact: darbyscott@gmail.com
+
 ## Installation
 
 Install dependencies with:
@@ -20,6 +24,6 @@ Install dependencies with:
 
 Then run:
 
-`npm run build`
+`npm run release`
 
 to compile and start a local webserver at http://localhost:8080

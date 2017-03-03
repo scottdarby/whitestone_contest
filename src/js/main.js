@@ -7,6 +7,7 @@ import Stats from 'stats.js';
 
 /**
  * Copyright (c) Scott Darby 2017
+ * darbyscott@gmail.com
  */
 
 (function() {
@@ -468,14 +469,6 @@ import Stats from 'stats.js';
             for (let channel = 0; channel < channelCount; channel++) {
                 grow(initFaces[channel], channel);
             }
-
-        } else {
-
-            // is audio track is finished, refresh
-            /*if (currentFrame > 1000) {
-                window.location.reload();
-                return;
-            }*/
 
         }
 
