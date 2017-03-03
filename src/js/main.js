@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import OrbitContructor from 'three-orbit-controls';
 var OrbitControls = OrbitContructor(THREE);
-import Stats from 'stats.js';
+//import Stats from 'stats.js';
 
 /**
  * Copyright (c) Scott Darby 2017
@@ -60,8 +60,8 @@ import Stats from 'stats.js';
         sprite = new THREE.TextureLoader().load("./textures/concentric.png"),
         symmetryLevels = 4;
 
-    stats = new Stats();
-    document.body.appendChild(stats.dom);
+    //stats = new Stats();
+    //document.body.appendChild(stats.dom);
 
     function start() {
         init();
@@ -461,7 +461,7 @@ import Stats from 'stats.js';
 
         currentFrame++;
 
-        stats.update();
+        //stats.update();
 
         if (sound.isPlaying) {
 
