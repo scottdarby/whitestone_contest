@@ -68,26 +68,12 @@ import Stats from 'stats.js';
     }
 
     let startButton = document.querySelectorAll('#start')[0];
-    let startLowButton = document.querySelectorAll('#start-low')[0];
     let container = document.querySelectorAll('.container')[0];
 
     startButton.addEventListener('click', (element) => {
 
         startButton.classList.toggle('hide');
-        startLowButton.classList.toggle('hide');
         container.classList.toggle('hide');
-
-        start();
-    });
-
-    startLowButton.addEventListener('click', (element) => {
-
-        startButton.classList.toggle('hide');
-        startLowButton.classList.toggle('hide');
-        container.classList.toggle('hide');
-
-        channelCount = 10;
-        symmetryLevels = 2;
 
         start();
     });
@@ -131,7 +117,7 @@ import Stats from 'stats.js';
 
         audioLoader.load('./audio/gao.mp3', (buffer) => {
             sound.setBuffer(buffer);
-            sound.setLoop(false);
+            sound.setLoop(true);
             sound.setVolume(1);
             sound.play();
         });
@@ -290,17 +276,17 @@ import Stats from 'stats.js';
             allFaces[channel].push(newFaces[i]);
         }
 
-        if (allFaces[channel].length > 500) {
+        if (allFaces[channel].length > 250) {
             allFaces[channel].shift();
         }
 
         for (let i = 0; i < allVertices[channel].length; i++) {
             if (i % 2 == 0) {
-                allVertices[channel][i]['x'] += (Math.sin(movementRate+i) * 0.005) * growthFactor;
-                allVertices[channel][i]['z'] += (Math.cos(movementRate+i) * 0.005) * growthFactor;
+                allVertices[channel][i]['x'] += (Math.sin(movementRate+i) * 0.005) * (growthFactor * 1.2);
+                allVertices[channel][i]['z'] += (Math.cos(movementRate+i) * 0.005) * (growthFactor * 1.2);
             } else {
-                allVertices[channel][i]['y'] += (Math.sin(movementRate+i) * 0.005) * growthFactor;
-                allVertices[channel][i]['x'] += (Math.cos(movementRate+i) * 0.005) * growthFactor;
+                allVertices[channel][i]['y'] += (Math.sin(movementRate+i) * 0.005) * (growthFactor * 1.2);
+                allVertices[channel][i]['x'] += (Math.cos(movementRate+i) * 0.005) * (growthFactor * 1.2);
             }
         }
 

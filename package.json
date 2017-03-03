@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "build": "node ./node_modules/webpack/bin/webpack.js --progress --hide-modules --optimize-minimize && ./node_modules/webpack-dev-server/bin/webpack-dev-server.js",
-    "dev": "node ./node_modules/webpack/bin/webpack.js --progress --color --watch --hide-modules"
+    "release": "webpack --progress --hide-modules --optimize-minimize && webpack-dev-server",
+    "dev": "webpack --progress --color --hide-modules && webpack-dev-server"
   },
   "author": "Scott <info@scottdarby.com>",
   "dependencies": {

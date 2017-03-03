@@ -12,12 +12,10 @@
 			}
 			.container {
 				width: 100%;
-				height: 80%;
-				padding-top: 20%;
+				height: 100%;
 				text-align: center;
 				color: #fff;
 				font-family:  "Helvetica";
-
 				font-weight: bold;
 				font-size: 30px;
 				position: absolute;
@@ -28,6 +26,16 @@
 				color: #fff;
 				text-decoration: none;
 				display: block;
+			}
+			#start {
+				position: absolute;
+				background: url('assets/Play.svg');
+				width: 64px;
+				height: 64px;
+				left: 50%;
+				margin-left: -32px;
+				top: 50%;
+				margin-top: -32px;
 			}
 			#start-low {
 				font-size: 18px;
@@ -40,8 +48,8 @@
 	</head>
 	<body>
 		<div class="container">
-			<a id="start" href="javascript:void(0);">START</a>
-			<a id="start-low" href="javascript:void(0);">START (low quality mode)</a>
+			<a id="start" href="javascript:void(0);"></a>
+			<!--<a id="start-low" href="javascript:void(0);">START (low quality mode)</a>-->
 		</div>
 		<script src="dist/app.js"></script>
 	</body>
