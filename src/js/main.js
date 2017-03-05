@@ -109,7 +109,7 @@ var OrbitControls = OrbitContructor(THREE);
 
         // scene
         scene = new THREE.Scene();
-        scene.background = new THREE.Color(0, 0, 0);
+        scene.background = new THREE.Color(10/255, 10/255, 10/255);
 
         // camera
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
