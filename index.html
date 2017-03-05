@@ -1,7 +1,7 @@
 <!--
 
 Copyright (c) Scott Darby 2017
-darbyscott@gmail.com  
+darbyscott@gmail.com
 
 -->
 
@@ -12,6 +12,7 @@ darbyscott@gmail.com
 			body {
 				margin: 0;
 				background: #222;
+				position: relative;
 			}
 			canvas {
 				width: 100%;
@@ -43,6 +44,7 @@ darbyscott@gmail.com
 				margin-left: -32px;
 				top: 50%;
 				margin-top: -32px;
+				z-index: 1;
 			}
 			#start-low {
 				font-size: 18px;
@@ -51,12 +53,29 @@ darbyscott@gmail.com
 			.hide {
 				display: none!important;
 			}
+			#loader {
+				position: absolute;
+				width: 64px;
+				height: 64px;
+				left: 50%;
+				margin-left: -32px;
+				top: 50%;
+				margin-top: -32px;
+				z-index: 0;
+				color: #fff;
+				padding: 16px 0 0;
+				text-align: center;
+			}
 		</style>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 	</head>
 	<body>
 		<div class="container">
 			<a id="start" href="javascript:void(0);"></a>
-			<!--<a id="start-low" href="javascript:void(0);">START (low quality mode)</a>-->
+		</div>
+		<div id="loader">
+			<i class="fa fa-spinner fa-pulse fa-2x fa-fw"></i>
+			<span class="sr-only">Loading...</span>
 		</div>
 		<script src="dist/app.js"></script>
 	</body>

@@ -58,7 +58,8 @@ var OrbitControls = OrbitContructor(THREE);
             [249, 89, 113],
         ],
         sprite = new THREE.TextureLoader().load("./textures/concentric.png"),
-        symmetryLevels = 4;
+        symmetryLevels = 4,
+        started = false;
 
     //stats = new Stats();
     //document.body.appendChild(stats.dom);
@@ -69,15 +70,28 @@ var OrbitControls = OrbitContructor(THREE);
     }
 
     let startButton = document.querySelectorAll('#start')[0];
+    let loader = document.querySelectorAll('#loader')[0];
     let container = document.querySelectorAll('.container')[0];
 
     startButton.addEventListener('click', (element) => {
-
         startButton.classList.toggle('hide');
         container.classList.toggle('hide');
-
         start();
     });
+
+    function reset() {
+        startButton.classList.toggle('hide');
+        container.classList.toggle('hide');
+        loader.classList.toggle('hide');
+        document.body.removeChild(renderer.domElement);
+        scene = null;
+        camera = null;
+        controls = null;
+        controls = null;
+        listener = null;
+        sound = null;
+        analyser = null;
+    }
 
     function init() {
 
@@ -118,7 +132,7 @@ var OrbitControls = OrbitContructor(THREE);
 
         audioLoader.load('./audio/gao.mp3', (buffer) => {
             sound.setBuffer(buffer);
-            sound.setLoop(true);
+            sound.setLoop(false);
             sound.setVolume(1);
             sound.play();
         });
@@ -392,7 +406,7 @@ var OrbitControls = OrbitContructor(THREE);
         }
         pointsMap[channel] = objectPoints;
 
-        let growthPoint = Math.ceil(movementRate * 0.053);
+        let growthPoint = Math.ceil(movementRate * 0.045);
 
         if (growthPoint > 15) {
             growthPoint = 15;
@@ -451,9 +465,23 @@ var OrbitControls = OrbitContructor(THREE);
 
         if (sound.isPlaying) {
 
+            if (!started) {
+                started = true;
+                loader.classList.toggle('hide');
+            }
+
             freqData = analyser.getFrequencyData();
             for (let channel = 0; channel < channelCount; channel++) {
                 grow(initFaces[channel], channel);
+            }
+
+        } else {
+
+            // once track has finished, restart
+            if (started) {
+                started = false;
+                reset();
+                return;
             }
 
         }
