@@ -6,13 +6,11 @@ My entry for the Whitestone Audio Reactive Coding Contest featuring music by Mik
 
 ## Description
 
-A generative webGL animation built with THREE.js which builds structures with sound. Feel free to pan and zoom around the scene.
+A generative webGL animation built with THREE.js which builds structures with sound. You can rotate the camera by clicking and dragging with the mouse and zoom in with the mouse wheel.
 
 ## Concept
 
-The audio input spectrum controls the shape of the generated geometry. The geometry produced is inspired by the way nature builds structures. The animation demonstrates how a simple set of parameters can create complexity.
-
-Although the app will react to any input sound, I tried to reflect the feel of Mike Gao's track through choice of colour and movement speed.
+The audio input spectrum controls the shape of the generated geometry. The geometry produced is inspired by the way nature builds structures. The animation demonstrates how a simple set of parameters can create complexity. To me Mike Gao's track is colourful and psychedelic and I tried to reflect this with my visualiser.
 
 ## Live Example
 https://scottdarby.github.io/whitestone_contest/
