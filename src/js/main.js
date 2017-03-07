@@ -59,7 +59,8 @@ var OrbitControls = OrbitContructor(THREE);
         ],
         sprite = new THREE.TextureLoader().load("./textures/concentric.png"),
         symmetryLevels = 4,
-        started = false;
+        started = false,
+        antiAlias = window.devicePixelRatio == 1; // turn off anti-aliasing for hi-dpi devices
 
     //stats = new Stats();
     //document.body.appendChild(stats.dom);
@@ -70,19 +71,54 @@ var OrbitControls = OrbitContructor(THREE);
     }
 
     let startButton = document.querySelectorAll('#start')[0];
+    let startMedButton = document.querySelectorAll('#start-medium')[0];
+    let startLowButton = document.querySelectorAll('#start-low')[0];
+
     let loader = document.querySelectorAll('#loader')[0];
     let container = document.querySelectorAll('.container')[0];
 
-    startButton.addEventListener('click', (element) => {
+    function hideStartScreen() {
         startButton.classList.toggle('hide');
+        startMedButton.classList.toggle('hide');
+        startLowButton.classList.toggle('hide');
         container.classList.toggle('hide');
+
+        // show loader
+        loader.classList.toggle('hide');
+    }
+
+    startButton.addEventListener('click', (element) => {
+        symmetryLevels = 4;
+        channelCount = 15;
+        antiAlias = window.devicePixelRatio == 1;
+        hideStartScreen();
+        start();
+    });
+
+    startMedButton.addEventListener('click', (element) => {
+        symmetryLevels = 4;
+        channelCount = 10;
+        antiAlias = false;
+        hideStartScreen();
+        start();
+    });
+
+    startLowButton.addEventListener('click', (element) => {
+        symmetryLevels = 2;
+        channelCount = 10;
+        antiAlias = false;
+        hideStartScreen();
         start();
     });
 
     function reset() {
+
         startButton.classList.toggle('hide');
+        startMedButton.classList.toggle('hide');
+        startLowButton.classList.toggle('hide');
+
         container.classList.toggle('hide');
-        loader.classList.toggle('hide');
+
         document.body.removeChild(renderer.domElement);
         scene = null;
         camera = null;
@@ -100,7 +136,7 @@ var OrbitControls = OrbitContructor(THREE);
 
         // renderer
         renderer = new THREE.WebGLRenderer({
-            antialias: window.devicePixelRatio == 1 // switch off anti-aliasing on hi-dpi displays
+            antialias: antiAlias // switch off anti-aliasing on hi-dpi displays
         });
 
         renderer.setPixelRatio(1);
@@ -109,7 +145,7 @@ var OrbitControls = OrbitContructor(THREE);
 
         // scene
         scene = new THREE.Scene();
-        scene.background = new THREE.Color(10/255, 10/255, 10/255);
+        scene.background = new THREE.Color(0, 0, 0);
 
         // camera
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
@@ -463,6 +499,8 @@ var OrbitControls = OrbitContructor(THREE);
 
         currentFrame++;
 
+        //stats.begin();
+
         if (sound.isPlaying) {
 
             if (!started) {
@@ -485,6 +523,8 @@ var OrbitControls = OrbitContructor(THREE);
             }
 
         }
+
+        //stats.end();
 
         requestAnimationFrame(animate);
         renderer.render(scene, camera);
