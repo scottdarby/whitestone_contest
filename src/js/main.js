@@ -59,14 +59,14 @@ const OrbitControls = OrbitContructor(THREE);
     depthTest: false
   })
 
+  const startButton = document.querySelectorAll('#button-container')[0]
+  const loader = document.querySelectorAll('#loader')[0]
+  const container = document.querySelectorAll('.container')[0]
+
   function start () {
     init()
     animate()
   }
-
-  const startButton = document.querySelectorAll('#start')[0]
-  const loader = document.querySelectorAll('#loader')[0]
-  const container = document.querySelectorAll('.container')[0]
 
   function hideStartScreen () {
     startButton.classList.toggle('hide')
@@ -129,7 +129,7 @@ const OrbitControls = OrbitContructor(THREE);
     sound = new THREE.Audio(listener)
     let audioLoader = new THREE.AudioLoader()
 
-    audioLoader.load('./audio/gao.mp3', (buffer) => {
+    audioLoader.load('./audio/bioluminescence.mp3', (buffer) => {
       sound.setBuffer(buffer)
       sound.setLoop(false)
       sound.setVolume(1)
@@ -393,9 +393,7 @@ const OrbitControls = OrbitContructor(THREE);
 
   function animate () {
     movementRate += 0.2
-
     currentFrame++
-
     controls.update()
 
     if (sound.isPlaying) {
