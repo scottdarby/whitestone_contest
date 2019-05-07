@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import OrbitConstructor from 'three-orbit-controls'
-const OrbitControls = OrbitConstructor(THREE);
+const OrbitControls = OrbitConstructor(THREE)
+const glslify = require('glslify');
 
 (function () {
   let renderer
@@ -20,11 +21,20 @@ const OrbitControls = OrbitConstructor(THREE);
   let analyser
   let freqData = null
   let materials = []
+  let colorArray = []
   const channelCount = 15
   let allVertices = []
   let allFaces = []
-  let initVerticeArray = null
-  let initFaceArray = null
+  let initVerticeArray = [
+    new THREE.Vector3(0, 0, 0),
+    new THREE.Vector3(0, 0, 0.001),
+    new THREE.Vector3(0, 0.001, 0.001),
+    new THREE.Vector3(0, 0.001, 0.001)
+  ]
+  let initFaceArray = []
+  for (let index = 0; index < 500; index++) {
+    initFaceArray.push(new THREE.Face3(0, 1, 2))
+  }
   let currentFrame = 0
   let choose = []
   let colours = []
@@ -50,16 +60,8 @@ const OrbitControls = OrbitConstructor(THREE);
     [249, 89, 203],
     [249, 89, 113]
   ]
-  const sprite = new THREE.TextureLoader().load('./textures/concentric.png')
   let started = false
-  const pointMaterial = new THREE.PointsMaterial({
-    size: 0.3,
-    alphaTest: 0.0001,
-    map: sprite,
-    transparent: true,
-    blending: THREE.AdditiveBlending,
-    depthTest: false
-  })
+  let pointMaterial
 
   const startButton = document.querySelectorAll('#button-container')[0]
   const loader = document.querySelectorAll('#loader')[0]
@@ -134,14 +136,48 @@ const OrbitControls = OrbitConstructor(THREE);
 
     analyser = new THREE.AudioAnalyser(sound, 32)
 
+    let pointsUniforms = THREE.ShaderLib.points.uniforms
+
+    pointsUniforms.uTime = {
+      type: 'f',
+      value: 0
+    }
+
+    pointsUniforms.size.value = 50.0
+
+    pointMaterial = new THREE.ShaderMaterial({
+      uniforms: pointsUniforms,
+      vertexShader: glslify('./glsl/points.vert'),
+      fragmentShader: glslify('./glsl/points.frag'),
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthTest: false,
+      // alphaTest: 0.0001,
+      fog: false
+    })
+
+    let shaderSource = THREE.ShaderLib['basic']
+
     for (let channel = 0; channel < channelCount; channel++) {
       colours[channel] = new THREE.Color(pallete[channel][0] / 255, pallete[channel][1] / 255, pallete[channel][2] / 255)
 
-      materials[channel] = new THREE.MeshBasicMaterial({
-        wireframe: true,
-        color: colours[channel],
-        opacity: 0.1,
-        transparent: true
+      let uniforms = THREE.UniformsUtils.clone(shaderSource.uniforms)
+
+      uniforms.uTime = {
+        type: 'f',
+        value: 0
+      }
+
+      uniforms.diffuse.value = colours[channel]
+      uniforms.opacity.value = 0.2
+
+      materials[channel] = new THREE.ShaderMaterial({
+        uniforms: uniforms,
+        vertexShader: glslify('./glsl/tetra.vert'),
+        fragmentShader: glslify('./glsl/tetra.frag'),
+        side: THREE.DoubleSide,
+        transparent: true,
+        wireframe: true
       })
 
       createInitialShape(channel, true)
@@ -161,22 +197,6 @@ const OrbitControls = OrbitConstructor(THREE);
   }
 
   function createInitialShape (channel, firstRun = false) {
-    if (initVerticeArray === null) {
-      initVerticeArray = [
-        new THREE.Vector3(0, 0, 0),
-        new THREE.Vector3(0, 0, 0.001),
-        new THREE.Vector3(0, 0.001, 0.001),
-        new THREE.Vector3(0, 0.001, 0.001)
-      ]
-    }
-
-    if (initFaceArray === null) {
-      initFaceArray = []
-      for (let index = 0; index < 500; index++) {
-        initFaceArray.push(new THREE.Face3(0, 1, 2))
-      }
-    }
-
     if (typeof allVertices[channel] === 'undefined') {
       allVertices[channel] = []
     }
@@ -196,7 +216,6 @@ const OrbitControls = OrbitConstructor(THREE);
     }
 
     if (firstRun) {
-      console.log('firstRun')
       geometry = new THREE.Geometry()
       geometry.vertices = initVerticeArray
       geometry.faces = initFaceArray
@@ -253,7 +272,7 @@ const OrbitControls = OrbitConstructor(THREE);
       return
     }
 
-    let growthFactor = Math.abs(freqData[channel])
+    let growthFactor = freqData[channel]
 
     switch (channel) {
       case 0:
@@ -315,31 +334,31 @@ const OrbitControls = OrbitConstructor(THREE);
     allFaces[channel].shift()
     allFaces[channel].shift()
 
+    objectMeshes1[channel].geometry.colors = colorArray
+
     objectMeshes1[channel].geometry.vertices = allVertices[channel]
     objectMeshes1[channel].geometry.faces = allFaces[channel]
     objectMeshes1[channel].geometry.verticesNeedUpdate = true
     objectMeshes1[channel].geometry.elementsNeedUpdate = true
+    objectMeshes1[channel].geometry.colorsNeedUpdate = true
     objectMeshes1[channel].geometry.computeFaceNormals()
 
     objectPoints1[channel].geometry.vertices = allVertices[channel]
     objectPoints1[channel].geometry.verticesNeedUpdate = true
 
     objectMeshes2[channel].geometry.vertices = allVertices[channel]
-    objectMeshes2[channel].geometry.faces = allFaces[channel]
     objectMeshes2[channel].geometry.verticesNeedUpdate = true
 
     objectPoints2[channel].geometry.vertices = allVertices[channel]
     objectPoints2[channel].geometry.verticesNeedUpdate = true
 
     objectMeshes3[channel].geometry.vertices = allVertices[channel]
-    objectMeshes3[channel].geometry.faces = allFaces[channel]
     objectMeshes3[channel].geometry.verticesNeedUpdate = true
 
     objectPoints3[channel].geometry.vertices = allVertices[channel]
     objectPoints3[channel].geometry.verticesNeedUpdate = true
 
     objectMeshes4[channel].geometry.vertices = allVertices[channel]
-    objectMeshes4[channel].geometry.faces = allFaces[channel]
     objectMeshes4[channel].geometry.verticesNeedUpdate = true
 
     objectPoints4[channel].geometry.vertices = allVertices[channel]
@@ -369,7 +388,7 @@ const OrbitControls = OrbitConstructor(THREE);
         notResetCount[channel] = 0
         createInitialShape(channel)
       } else {
-        if (choose[channel] % 250 === 0) {
+        if (choose[channel] % 20 === 0) {
           notResetCount[channel] = 0
           createInitialShape(channel)
         } else {
@@ -400,6 +419,8 @@ const OrbitControls = OrbitConstructor(THREE);
         freqData = analyser.getFrequencyData()
       }
       for (let channel = 0; channel < channelCount; channel++) {
+        pointMaterial.uniforms.uTime.value = currentFrame
+        materials[channel].uniforms.uTime.value = currentFrame
         grow(initFaces[channel], channel)
       }
     } else {
