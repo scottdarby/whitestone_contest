@@ -1,27 +1,30 @@
 import * as THREE from 'three'
-import OrbitContructor from 'three-orbit-controls'
-const OrbitControls = OrbitContructor(THREE);
+import OrbitConstructor from 'three-orbit-controls'
+const OrbitControls = OrbitConstructor(THREE);
 
 (function () {
   let renderer
   let scene
+  let objectMeshes1 = []
+  let objectMeshes2 = []
+  let objectMeshes3 = []
+  let objectMeshes4 = []
+  let objectPoints1 = []
+  let objectPoints2 = []
+  let objectPoints3 = []
+  let objectPoints4 = []
+  let geometry
   let camera
   let controls
   let initFaces = []
-  let geoMap = []
-  let pointsMap = []
   let analyser
-  let freqData
+  let freqData = null
   let materials = []
   const channelCount = 15
   let allVertices = []
   let allFaces = []
-  const initTetraFaces = [
-    [0, 2, 3],
-    [0, 1, 3],
-    [1, 2, 3],
-    [0, 1, 2]
-  ]
+  let initVerticeArray = null
+  let initFaceArray = null
   let currentFrame = 0
   let choose = []
   let colours = []
@@ -48,10 +51,9 @@ const OrbitControls = OrbitContructor(THREE);
     [249, 89, 113]
   ]
   const sprite = new THREE.TextureLoader().load('./textures/concentric.png')
-  const symmetryLevels = 4
   let started = false
   const pointMaterial = new THREE.PointsMaterial({
-    size: 0.5,
+    size: 0.3,
     alphaTest: 0.0001,
     map: sprite,
     transparent: true,
@@ -63,6 +65,11 @@ const OrbitControls = OrbitContructor(THREE);
   const loader = document.querySelectorAll('#loader')[0]
   const container = document.querySelectorAll('.container')[0]
 
+  startButton.addEventListener('click', (element) => {
+    hideStartScreen()
+    start()
+  })
+
   function start () {
     init()
     animate()
@@ -73,11 +80,6 @@ const OrbitControls = OrbitContructor(THREE);
     container.classList.toggle('hide')
     loader.classList.toggle('hide')
   }
-
-  startButton.addEventListener('click', (element) => {
-    hideStartScreen()
-    start()
-  })
 
   function reset () {
     startButton.classList.toggle('hide')
@@ -94,26 +96,20 @@ const OrbitControls = OrbitContructor(THREE);
     currentFrame = 0
     movementRate = 0
 
-    // renderer
     renderer = new THREE.WebGLRenderer({
       antialias: true
     })
 
     renderer.autoClear = false
-
     renderer.setSize(window.innerWidth, window.innerHeight)
     document.body.appendChild(renderer.domElement)
 
-    // scene
     scene = new THREE.Scene()
-    scene.background = new THREE.Color(0, 0, 0)
 
-    // camera
     camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 300)
-    camera.position.set(0, 0, 2.3)
+    camera.position.set(0, 0, 3.3)
     scene.add(camera)
 
-    // controls
     controls = new OrbitControls(camera, renderer.domElement)
     controls.minDistance = 0
     controls.maxDistance = 200
@@ -144,35 +140,42 @@ const OrbitControls = OrbitContructor(THREE);
       materials[channel] = new THREE.MeshBasicMaterial({
         wireframe: true,
         color: colours[channel],
-        opacity: 0.2,
+        opacity: 0.1,
         transparent: true
       })
 
-      createInitialShape(channel)
+      createInitialShape(channel, true)
     }
 
     window.addEventListener('resize', onWindowResize, false)
   }
 
   function onWindowResize () {
-    camera.aspect = window.innerWidth / window.innerHeight
-    camera.updateProjectionMatrix()
-    renderer.setSize(window.innerWidth, window.innerHeight)
+    if (camera) {
+      camera.aspect = window.innerWidth / window.innerHeight
+      camera.updateProjectionMatrix()
+    }
+    if (renderer) {
+      renderer.setSize(window.innerWidth, window.innerHeight)
+    }
   }
 
-  function createInitialShape (channel) {
-    let vertices = [
-      new THREE.Vector3(0, 0, 0),
-      new THREE.Vector3(0, 0, 0.001),
-      new THREE.Vector3(0, 0.001, 0.001),
-      new THREE.Vector3(0, 0.001, 0.001)
-    ]
+  function createInitialShape (channel, firstRun = false) {
+    if (initVerticeArray === null) {
+      initVerticeArray = [
+        new THREE.Vector3(0, 0, 0),
+        new THREE.Vector3(0, 0, 0.001),
+        new THREE.Vector3(0, 0.001, 0.001),
+        new THREE.Vector3(0, 0.001, 0.001)
+      ]
+    }
 
-    let faces = [
-      new THREE.Face3(...initTetraFaces[0]),
-      new THREE.Face3(...initTetraFaces[1]),
-      new THREE.Face3(...initTetraFaces[2])
-    ]
+    if (initFaceArray === null) {
+      initFaceArray = []
+      for (let index = 0; index < 500; index++) {
+        initFaceArray.push(new THREE.Face3(0, 1, 2))
+      }
+    }
 
     if (typeof allVertices[channel] === 'undefined') {
       allVertices[channel] = []
@@ -184,24 +187,65 @@ const OrbitControls = OrbitContructor(THREE);
     }
     allFaces[channel] = []
 
-    for (let i = 0; i < vertices.length; i++) {
-      allVertices[channel].push(vertices[i])
+    for (let i = 0; i < initVerticeArray.length; i++) {
+      allVertices[channel].push(initVerticeArray[i])
     }
 
-    for (let i = 0; i < faces.length; i++) {
-      allFaces[channel].push(faces[i])
+    for (let i = 0; i < initFaceArray.length; i++) {
+      allFaces[channel].push(initFaceArray[i])
     }
 
-    let geometry = new THREE.Geometry()
-    geometry.vertices = vertices
-    geometry.faces = faces
-    geometry.computeFaceNormals()
+    if (firstRun) {
+      console.log('firstRun')
+      geometry = new THREE.Geometry()
+      geometry.vertices = initVerticeArray
+      geometry.faces = initFaceArray
+      objectMeshes1[channel] = new THREE.Mesh(geometry, materials[channel])
+      objectMeshes1[channel].frustumCulled = false
+      scene.add(objectMeshes1[channel])
+
+      objectPoints1[channel] = new THREE.Points(geometry, pointMaterial)
+      objectPoints1[channel].frustumCulled = false
+      scene.add(objectPoints1[channel])
+
+      objectMeshes2[channel] = new THREE.Mesh(geometry, materials[channel])
+      objectMeshes2[channel].frustumCulled = false
+      objectMeshes2[channel].scale.x = -1
+      scene.add(objectMeshes2[channel])
+
+      objectPoints2[channel] = new THREE.Points(geometry, pointMaterial)
+      objectPoints2[channel].frustumCulled = false
+      objectPoints2[channel].scale.x = -1
+      scene.add(objectPoints2[channel])
+
+      objectMeshes3[channel] = new THREE.Mesh(geometry, materials[channel])
+      objectMeshes3[channel].frustumCulled = false
+      objectMeshes3[channel].scale.y = -1
+      scene.add(objectMeshes3[channel])
+
+      objectPoints3[channel] = new THREE.Points(geometry, pointMaterial)
+      objectPoints3[channel].frustumCulled = false
+      objectPoints3[channel].scale.y = -1
+      scene.add(objectPoints3[channel])
+
+      objectMeshes4[channel] = new THREE.Mesh(geometry, materials[channel])
+      objectMeshes4[channel].frustumCulled = false
+      objectMeshes4[channel].scale.x = -1
+      objectMeshes4[channel].scale.y = -1
+      scene.add(objectMeshes4[channel])
+
+      objectPoints4[channel] = new THREE.Points(geometry, pointMaterial)
+      objectPoints4[channel].frustumCulled = false
+      objectPoints4[channel].scale.x = -1
+      objectPoints4[channel].scale.y = -1
+      scene.add(objectPoints4[channel])
+    }
 
     if (typeof initFaces[channel] === 'undefined') {
       initFaces[channel] = []
     }
     initFaces[channel] = []
-    initFaces[channel] = faces[1]
+    initFaces[channel] = initFaceArray[1]
   }
 
   function grow (currentFace, channel) {
@@ -248,9 +292,9 @@ const OrbitControls = OrbitContructor(THREE);
     let faceVerticeA = allVertices[channel][currentFace['a']]
     let faceVerticeB = allVertices[channel][currentFace['b']]
     let faceVerticeC = allVertices[channel][currentFace['c']]
-    let faceCenterX = (faceVerticeA['x'] + faceVerticeB['x'] + faceVerticeC['x']) / 3
-    let faceCenterY = (faceVerticeA['y'] + faceVerticeB['y'] + faceVerticeC['y']) / 3
-    let faceCenterZ = (faceVerticeA['z'] + faceVerticeB['z'] + faceVerticeC['z']) / 3
+    let faceCenterX = (faceVerticeA['x'] + faceVerticeB['x'] + faceVerticeC['x']) * 0.3333333333333333
+    let faceCenterY = (faceVerticeA['y'] + faceVerticeB['y'] + faceVerticeC['y']) * 0.3333333333333333
+    let faceCenterZ = (faceVerticeA['z'] + faceVerticeB['z'] + faceVerticeC['z']) * 0.3333333333333333
     let centerFaceVertice = new THREE.Vector3(faceCenterX, faceCenterY, faceCenterZ)
 
     centerFaceVertice.add(currentFace.normal.multiplyScalar(growthFactor))
@@ -268,84 +312,38 @@ const OrbitControls = OrbitContructor(THREE);
       allFaces[channel].push(newFaces[i])
     }
 
-    if (allFaces[channel].length > 250) {
-      allFaces[channel].shift()
-    }
+    allFaces[channel].shift()
+    allFaces[channel].shift()
 
-    if (typeof geoMap[channel] !== 'undefined') {
-      for (let i = 0; i < geoMap[channel].length; i++) {
-        geoMap[channel][i].material.dispose()
-        geoMap[channel][i].geometry.dispose()
-        scene.remove(geoMap[channel][i])
-      }
-    }
+    objectMeshes1[channel].geometry.vertices = allVertices[channel]
+    objectMeshes1[channel].geometry.faces = allFaces[channel]
+    objectMeshes1[channel].geometry.verticesNeedUpdate = true
+    objectMeshes1[channel].geometry.elementsNeedUpdate = true
+    objectMeshes1[channel].geometry.computeFaceNormals()
 
-    if (typeof pointsMap[channel] !== 'undefined') {
-      for (let i = 0; i < pointsMap[channel].length; i++) {
-        pointsMap[channel][i].material.dispose()
-        pointsMap[channel][i].geometry.dispose()
-        scene.remove(pointsMap[channel][i])
-      }
-    }
+    objectPoints1[channel].geometry.vertices = allVertices[channel]
+    objectPoints1[channel].geometry.verticesNeedUpdate = true
 
-    let geometry = new THREE.Geometry()
-    geometry.vertices = allVertices[channel]
-    geometry.faces = allFaces[channel]
-    geometry.computeFaceNormals()
+    objectMeshes2[channel].geometry.vertices = allVertices[channel]
+    objectMeshes2[channel].geometry.faces = allFaces[channel]
+    objectMeshes2[channel].geometry.verticesNeedUpdate = true
 
-    let objectMeshes = []
-    let objectPoints = []
+    objectPoints2[channel].geometry.vertices = allVertices[channel]
+    objectPoints2[channel].geometry.verticesNeedUpdate = true
 
-    objectMeshes[0] = new THREE.Mesh(geometry, materials[channel])
-    objectMeshes[0].frustumCulled = false
+    objectMeshes3[channel].geometry.vertices = allVertices[channel]
+    objectMeshes3[channel].geometry.faces = allFaces[channel]
+    objectMeshes3[channel].geometry.verticesNeedUpdate = true
 
-    objectPoints[0] = new THREE.Points(geometry, pointMaterial)
+    objectPoints3[channel].geometry.vertices = allVertices[channel]
+    objectPoints3[channel].geometry.verticesNeedUpdate = true
 
-    scene.add(objectMeshes[0])
-    scene.add(objectPoints[0])
+    objectMeshes4[channel].geometry.vertices = allVertices[channel]
+    objectMeshes4[channel].geometry.faces = allFaces[channel]
+    objectMeshes4[channel].geometry.verticesNeedUpdate = true
 
-    objectMeshes[1] = objectMeshes[0].clone()
-    objectMeshes[1].scale.x = -1
-
-    objectPoints[1] = objectPoints[0].clone()
-    objectPoints[1].scale.x = -1
-
-    scene.add(objectMeshes[1])
-    scene.add(objectPoints[1])
-
-    if (symmetryLevels > 2) {
-      objectMeshes[2] = objectMeshes[0].clone()
-      objectMeshes[2].scale.y = -1
-
-      objectPoints[2] = objectPoints[0].clone()
-      objectPoints[2].scale.y = -1
-
-      scene.add(objectMeshes[2])
-      scene.add(objectPoints[2])
-    }
-
-    if (symmetryLevels > 3) {
-      objectMeshes[3] = objectMeshes[0].clone()
-      objectMeshes[3].scale.y = -1
-      objectMeshes[3].scale.x = -1
-
-      objectPoints[3] = objectPoints[0].clone()
-      objectPoints[3].scale.y = -1
-      objectPoints[3].scale.x = -1
-
-      scene.add(objectMeshes[3])
-      scene.add(objectPoints[3])
-    }
-
-    if (typeof geoMap[channel] === 'undefined') {
-      geoMap[channel] = []
-    }
-    geoMap[channel] = objectMeshes
-
-    if (typeof pointsMap[channel] === 'undefined') {
-      pointsMap[channel] = []
-    }
-    pointsMap[channel] = objectPoints
+    objectPoints4[channel].geometry.vertices = allVertices[channel]
+    objectPoints4[channel].geometry.verticesNeedUpdate = true
 
     let growthPoint = Math.ceil(movementRate * 0.045)
 
@@ -358,17 +356,9 @@ const OrbitControls = OrbitContructor(THREE);
         choose[channel] = []
       }
 
-      if (typeof choose[channel][currentFrame] === 'undefined') {
-        choose[channel][currentFrame] = Math.ceil((Math.random() * allFaces[channel].length - 1) * 0.5)
-      }
+      choose[channel] = Math.ceil((Math.random() * allFaces[channel].length - 1) * 0.3)
 
-      let newFace = allFaces[channel][allFaces[channel].length - choose[channel][currentFrame]]
-
-      if (typeof newFace === 'undefined') {
-        initFaces[channel] = allFaces[channel][allFaces[channel].length - 1]
-      } else {
-        initFaces[channel] = newFace
-      }
+      initFaces[channel] = allFaces[channel][allFaces[channel].length - choose[channel]]
 
       if (typeof notResetCount[channel] === 'undefined') {
         notResetCount[channel] = 0
@@ -379,7 +369,7 @@ const OrbitControls = OrbitContructor(THREE);
         notResetCount[channel] = 0
         createInitialShape(channel)
       } else {
-        if (choose[channel][currentFrame] % 20 === 0) {
+        if (choose[channel] % 250 === 0) {
           notResetCount[channel] = 0
           createInitialShape(channel)
         } else {
@@ -392,7 +382,7 @@ const OrbitControls = OrbitContructor(THREE);
   }
 
   function animate () {
-    movementRate += 0.2
+    movementRate += 0.5
     currentFrame++
     controls.update()
 
@@ -402,7 +392,13 @@ const OrbitControls = OrbitContructor(THREE);
         loader.classList.toggle('hide')
       }
 
-      freqData = analyser.getFrequencyData()
+      if (freqData === null) {
+        freqData = analyser.getFrequencyData()
+      }
+
+      if (currentFrame % 250 === 0) {
+        freqData = analyser.getFrequencyData()
+      }
       for (let channel = 0; channel < channelCount; channel++) {
         grow(initFaces[channel], channel)
       }
