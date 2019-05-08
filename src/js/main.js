@@ -151,9 +151,7 @@ const glslify = require('glslify');
       fragmentShader: glslify('./glsl/points.frag'),
       transparent: true,
       blending: THREE.AdditiveBlending,
-      depthTest: false,
-      // alphaTest: 0.0001,
-      fog: false
+      depthTest: false
     })
 
     let shaderSource = THREE.ShaderLib['basic']
@@ -197,20 +195,12 @@ const glslify = require('glslify');
   }
 
   function createInitialShape (channel, firstRun = false) {
-    if (typeof allVertices[channel] === 'undefined') {
-      allVertices[channel] = []
-    }
     allVertices[channel] = []
-
-    if (typeof allFaces[channel] === 'undefined') {
-      allFaces[channel] = []
-    }
-    allFaces[channel] = []
-
     for (let i = 0; i < initVerticeArray.length; i++) {
       allVertices[channel].push(initVerticeArray[i])
     }
 
+    allFaces[channel] = []
     for (let i = 0; i < initFaceArray.length; i++) {
       allFaces[channel].push(initFaceArray[i])
     }
@@ -260,9 +250,6 @@ const glslify = require('glslify');
       scene.add(objectPoints4[channel])
     }
 
-    if (typeof initFaces[channel] === 'undefined') {
-      initFaces[channel] = []
-    }
     initFaces[channel] = []
     initFaces[channel] = initFaceArray[1]
   }
@@ -272,40 +259,7 @@ const glslify = require('glslify');
       return
     }
 
-    let growthFactor = freqData[channel]
-
-    switch (channel) {
-      case 0:
-        growthFactor *= 0.2
-        break
-      case 1:
-        growthFactor *= 0.3
-        break
-      case 2:
-        growthFactor *= 0.4
-        break
-      case 3:
-        growthFactor *= 0.5
-        break
-      case 4:
-        growthFactor *= 0.6
-        break
-      case 5:
-        growthFactor *= 0.7
-        break
-      case 6:
-        growthFactor *= 0.8
-        break
-      case 7:
-        growthFactor *= 0.9
-        break
-    }
-
-    growthFactor *= 0.001
-
-    if (growthFactor > 1) {
-      growthFactor = 1
-    }
+    let growthFactor = freqData[channel] * 0.001
 
     // get center point of face
     let faceVerticeA = allVertices[channel][currentFace['a']]
@@ -316,7 +270,15 @@ const glslify = require('glslify');
     let faceCenterZ = (faceVerticeA['z'] + faceVerticeB['z'] + faceVerticeC['z']) * 0.3333333333333333
     let centerFaceVertice = new THREE.Vector3(faceCenterX, faceCenterY, faceCenterZ)
 
-    centerFaceVertice.add(currentFace.normal.multiplyScalar(growthFactor))
+    // get face normal
+    let cb = new THREE.Vector3()
+    let ab = new THREE.Vector3()
+    cb.subVectors(faceVerticeC, faceVerticeB)
+    ab.subVectors(faceVerticeA, faceVerticeB)
+    cb.cross(ab)
+    cb.normalize()
+
+    centerFaceVertice.add(cb.multiplyScalar(growthFactor))
     allVertices[channel].push(centerFaceVertice)
 
     let newFaces = [
@@ -340,8 +302,6 @@ const glslify = require('glslify');
     objectMeshes1[channel].geometry.faces = allFaces[channel]
     objectMeshes1[channel].geometry.verticesNeedUpdate = true
     objectMeshes1[channel].geometry.elementsNeedUpdate = true
-    objectMeshes1[channel].geometry.colorsNeedUpdate = true
-    objectMeshes1[channel].geometry.computeFaceNormals()
 
     objectPoints1[channel].geometry.vertices = allVertices[channel]
     objectPoints1[channel].geometry.verticesNeedUpdate = true

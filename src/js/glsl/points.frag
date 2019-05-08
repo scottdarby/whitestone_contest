@@ -1,6 +1,9 @@
 uniform vec3 diffuse;
 uniform float opacity;
 uniform float uTime;
+uniform sampler2D map;
+varying vec2 vUv;
+uniform mat3 uvTransform;
 
 float circle(in float dist, in float radius) {
 	return 1.0 - smoothstep(
@@ -10,26 +13,13 @@ float circle(in float dist, in float radius) {
 	);
 }
 
-
 #include <common>
-#include <color_pars_fragment>
-// #include <map_particle_pars_fragment>
-uniform sampler2D map;
-varying vec2 vUv;
-uniform mat3 uvTransform;
-#include <fog_pars_fragment>
-#include <logdepthbuf_pars_fragment>
-#include <clipping_planes_pars_fragment>
 
 void main() {
-
-	#include <clipping_planes_fragment>
 
 	vec3 outgoingLight = vec3( 0.0 );
 	vec4 diffuseColor = vec4( diffuse, opacity );
 
-	#include <logdepthbuf_fragment>
-	// #include <map_particle_fragment>
 	vec2 uv = ( uvTransform * vec3( gl_PointCoord.x, 1.0 - gl_PointCoord.y, 1 ) ).xy;
 
 	vec2 pos = uv;
@@ -42,9 +32,6 @@ void main() {
 
 	gl_FragColor = vec4( color, 0.03 );
 
-	#include <premultiplied_alpha_fragment>
 	#include <tonemapping_fragment>
-	#include <encodings_fragment>
-	#include <fog_fragment>
 
 }
