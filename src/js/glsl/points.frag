@@ -4,6 +4,7 @@ uniform float uTime;
 uniform sampler2D map;
 varying vec2 vUv;
 uniform mat3 uvTransform;
+uniform float uFreq;
 
 float circle(in float dist, in float radius) {
 	return 1.0 - smoothstep(
@@ -30,7 +31,7 @@ void main() {
 	vec3 color = vec3(circle(dist, 0.9));
 	color *= sin((dist * 100.0) - (uTime * 0.05));
 
-	gl_FragColor = vec4( color, 0.03 );
+	gl_FragColor = vec4( color, clamp(uFreq, 0.0, 0.03) );
 
 	#include <tonemapping_fragment>
 

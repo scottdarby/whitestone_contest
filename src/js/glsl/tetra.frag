@@ -1,5 +1,6 @@
 uniform vec3 diffuse;
 uniform float opacity;
+uniform float uFreq;
 
 #include <common>
 
@@ -13,7 +14,7 @@ void main() {
 
 	vec3 outgoingLight = reflectedLight.indirectDiffuse;
 
-	gl_FragColor = vec4( outgoingLight, diffuseColor.a );
+	gl_FragColor = vec4( outgoingLight, clamp(uFreq, 0.0, 0.2) );
 
 	#include <tonemapping_fragment>
 

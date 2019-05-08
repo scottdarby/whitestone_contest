@@ -21,6 +21,7 @@ const glslify = require('glslify');
   let analyser
   let freqData = null
   let materials = []
+  let pointMaterials = []
   let colorArray = []
   const channelCount = 15
   let allVertices = []
@@ -61,7 +62,6 @@ const glslify = require('glslify');
     [249, 89, 113]
   ]
   let started = false
-  let pointMaterial
 
   const startButton = document.querySelectorAll('#button-container')[0]
   const loader = document.querySelectorAll('#loader')[0]
@@ -113,11 +113,11 @@ const glslify = require('glslify');
     scene.add(camera)
 
     controls = new OrbitControls(camera, renderer.domElement)
-    controls.minDistance = 0
+    controls.minDistance = 1
     controls.maxDistance = 200
     controls.enablePan = false
     controls.zoomSpeed = 0.7
-    controls.rotateSpeed = 0.07
+    controls.rotateSpeed = 0.04
     controls.enableDamping = true
     controls.dampingFactor = 0.04
 
@@ -134,7 +134,8 @@ const glslify = require('glslify');
       sound.play()
     })
 
-    analyser = new THREE.AudioAnalyser(sound, 32)
+    analyser = new THREE.AudioAnalyser(sound, 128)
+    analyser.smoothingTimeConstant = 1.0
 
     let pointsUniforms = THREE.ShaderLib.points.uniforms
 
@@ -143,16 +144,12 @@ const glslify = require('glslify');
       value: 0
     }
 
-    pointsUniforms.size.value = 50.0
+    pointsUniforms.uFreq = {
+      type: 'f',
+      value: 0
+    }
 
-    pointMaterial = new THREE.ShaderMaterial({
-      uniforms: pointsUniforms,
-      vertexShader: glslify('./glsl/points.vert'),
-      fragmentShader: glslify('./glsl/points.frag'),
-      transparent: true,
-      blending: THREE.AdditiveBlending,
-      depthTest: false
-    })
+    pointsUniforms.size.value = 50.0
 
     let shaderSource = THREE.ShaderLib['basic']
 
@@ -162,6 +159,11 @@ const glslify = require('glslify');
       let uniforms = THREE.UniformsUtils.clone(shaderSource.uniforms)
 
       uniforms.uTime = {
+        type: 'f',
+        value: 0
+      }
+
+      uniforms.uFreq = {
         type: 'f',
         value: 0
       }
@@ -176,6 +178,15 @@ const glslify = require('glslify');
         side: THREE.DoubleSide,
         transparent: true,
         wireframe: true
+      })
+
+      pointMaterials[channel] = new THREE.ShaderMaterial({
+        uniforms: pointsUniforms,
+        vertexShader: glslify('./glsl/points.vert'),
+        fragmentShader: glslify('./glsl/points.frag'),
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthTest: false
       })
 
       createInitialShape(channel, true)
@@ -213,7 +224,7 @@ const glslify = require('glslify');
       objectMeshes1[channel].frustumCulled = false
       scene.add(objectMeshes1[channel])
 
-      objectPoints1[channel] = new THREE.Points(geometry, pointMaterial)
+      objectPoints1[channel] = new THREE.Points(geometry, pointMaterials[channel])
       objectPoints1[channel].frustumCulled = false
       scene.add(objectPoints1[channel])
 
@@ -222,7 +233,7 @@ const glslify = require('glslify');
       objectMeshes2[channel].scale.x = -1
       scene.add(objectMeshes2[channel])
 
-      objectPoints2[channel] = new THREE.Points(geometry, pointMaterial)
+      objectPoints2[channel] = new THREE.Points(geometry, pointMaterials[channel])
       objectPoints2[channel].frustumCulled = false
       objectPoints2[channel].scale.x = -1
       scene.add(objectPoints2[channel])
@@ -232,7 +243,7 @@ const glslify = require('glslify');
       objectMeshes3[channel].scale.y = -1
       scene.add(objectMeshes3[channel])
 
-      objectPoints3[channel] = new THREE.Points(geometry, pointMaterial)
+      objectPoints3[channel] = new THREE.Points(geometry, pointMaterials[channel])
       objectPoints3[channel].frustumCulled = false
       objectPoints3[channel].scale.y = -1
       scene.add(objectPoints3[channel])
@@ -243,7 +254,7 @@ const glslify = require('glslify');
       objectMeshes4[channel].scale.y = -1
       scene.add(objectMeshes4[channel])
 
-      objectPoints4[channel] = new THREE.Points(geometry, pointMaterial)
+      objectPoints4[channel] = new THREE.Points(geometry, pointMaterials[channel])
       objectPoints4[channel].frustumCulled = false
       objectPoints4[channel].scale.x = -1
       objectPoints4[channel].scale.y = -1
@@ -259,7 +270,31 @@ const glslify = require('glslify');
       return
     }
 
-    let growthFactor = freqData[channel] * 0.001
+    let growthFactor
+
+    switch (channel) {
+      case 10:
+        growthFactor = Math.pow(freqData[channel], 2) * 0.000003
+        break
+      case 11:
+        growthFactor = Math.pow(freqData[channel], 2) * 0.000003
+        break
+      case 12:
+        growthFactor = Math.pow(freqData[channel], 2) * 0.000003
+        break
+      case 13:
+        growthFactor = Math.pow(freqData[channel], 2) * 0.000003
+        break
+      case 14:
+        growthFactor = Math.pow(freqData[channel], 2) * 0.000003
+        break
+      case 15:
+        growthFactor = Math.pow(freqData[channel], 2) * 0.000003
+        break
+      default:
+        growthFactor = Math.pow(freqData[channel], 2) * 0.000001
+        break
+    }
 
     // get center point of face
     let faceVerticeA = allVertices[channel][currentFace['a']]
@@ -371,16 +406,59 @@ const glslify = require('glslify');
         loader.classList.toggle('hide')
       }
 
-      if (freqData === null) {
-        freqData = analyser.getFrequencyData()
-      }
+      freqData = analyser.getFrequencyData()
 
-      if (currentFrame % 250 === 0) {
-        freqData = analyser.getFrequencyData()
-      }
       for (let channel = 0; channel < channelCount; channel++) {
-        pointMaterial.uniforms.uTime.value = currentFrame
+        switch (channel) {
+          case 0:
+            materials[channel].uniforms.uFreq.value = Math.pow(freqData[channel + 1], 10) * 0.0000000000000000000000005
+            pointMaterials[channel].uniforms.uFreq.value = Math.pow(freqData[channel + 1], 10) * 0.0000000000000000000000005
+            break
+          case 1:
+            materials[channel].uniforms.uFreq.value = Math.pow(freqData[channel + 1], 10) * 0.000000000000000000000001
+            pointMaterials[channel].uniforms.uFreq.value = Math.pow(freqData[channel + 1], 10) * 0.000000000000000000000001
+            break
+          case 2:
+            materials[channel].uniforms.uFreq.value = Math.pow(freqData[channel + 1], 10) * 0.00000000000000000000001
+            pointMaterials[channel].uniforms.uFreq.value = Math.pow(freqData[channel + 1], 10) * 0.00000000000000000000001
+            break
+          case 3:
+            materials[channel].uniforms.uFreq.value = Math.pow(freqData[channel + 1], 10) * 0.00000000000000000000001
+            pointMaterials[channel].uniforms.uFreq.value = Math.pow(freqData[channel + 1], 10) * 0.00000000000000000000001
+            break
+          case 4:
+            materials[channel].uniforms.uFreq.value = Math.pow(freqData[channel + 1], 10) * 0.00000000000000000000001
+            pointMaterials[channel].uniforms.uFreq.value = Math.pow(freqData[channel + 1], 10) * 0.00000000000000000000001
+            break
+          case 5:
+            materials[channel].uniforms.uFreq.value = Math.pow(freqData[channel + 1], 10) * 0.00000000000000000000001
+            pointMaterials[channel].uniforms.uFreq.value = Math.pow(freqData[channel + 1], 10) * 0.00000000000000000000001
+            break
+          case 6:
+            materials[channel].uniforms.uFreq.value = Math.pow(freqData[channel + 1], 10) * 0.00000000000000000000001
+            pointMaterials[channel].uniforms.uFreq.value = Math.pow(freqData[channel + 1], 10) * 0.00000000000000000000001
+            break
+          case 7:
+            materials[channel].uniforms.uFreq.value = Math.pow(freqData[channel + 1], 10) * 0.00000000000000000000001
+            pointMaterials[channel].uniforms.uFreq.value = Math.pow(freqData[channel + 1], 10) * 0.00000000000000000000001
+            break
+          case 8:
+            materials[channel].uniforms.uFreq.value = Math.pow(freqData[channel + 1], 10) * 0.0000000000000000000001
+            pointMaterials[channel].uniforms.uFreq.value = Math.pow(freqData[channel + 1], 10) * 0.0000000000000000000001
+            break
+          case 9:
+            materials[channel].uniforms.uFreq.value = Math.pow(freqData[channel + 1], 10) * 0.0000000000000000000001
+            pointMaterials[channel].uniforms.uFreq.value = Math.pow(freqData[channel + 1], 10) * 0.0000000000000000000001
+            break
+          default:
+            materials[channel].uniforms.uFreq.value = Math.pow(freqData[channel + 1], 10) * 0.0000000000000000000001
+            pointMaterials[channel].uniforms.uFreq.value = Math.pow(freqData[channel + 1], 10) * 0.0000000000000000000001
+            break
+        }
+
         materials[channel].uniforms.uTime.value = currentFrame
+        pointMaterials[channel].uniforms.uTime.value = currentFrame
+
         grow(initFaces[channel], channel)
       }
     } else {
