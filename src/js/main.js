@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import TWEEN from 'tween.js'
 import OrbitConstructor from 'three-orbit-controls'
 const OrbitControls = OrbitConstructor(THREE)
 const glslify = require('glslify');
@@ -64,6 +65,12 @@ const glslify = require('glslify');
   let started = false
   let clock = new THREE.Clock(false)
 
+  let cameraAnimating = false
+  let camMovementTriggered = false
+  let defaultCamEasing = TWEEN.Easing.Quadratic.InOut
+  let camMoveTween
+  let userInteracting = false
+
   const startButton = document.querySelectorAll('#button-container')[0]
   const loader = document.querySelectorAll('#loader')[0]
   const container = document.querySelectorAll('.container')[0]
@@ -95,6 +102,34 @@ const glslify = require('glslify');
     analyser = null
   }
 
+  function mousedown () {
+    userInteracting = true
+    userInteraction()
+  }
+
+  function touchstart () {
+    userInteracting = true
+    userInteraction()
+  }
+
+  function mouseup () {
+    userInteracting = false
+    userInteraction()
+  }
+
+  function touchend () {
+    userInteracting = false
+    userInteraction()
+  }
+
+  function userInteraction () {
+    camMovementTriggered = false
+    cameraAnimating = false
+    if (camMoveTween) {
+      camMoveTween.stop()
+    }
+  }
+
   function init () {
     clock.start()
 
@@ -104,6 +139,8 @@ const glslify = require('glslify');
     renderer = new THREE.WebGLRenderer({
       antialias: true
     })
+
+    renderer.autoClear = false
 
     renderer.toneMapping = THREE.LinearToneMapping
 
@@ -132,6 +169,7 @@ const glslify = require('glslify');
     let audioLoader = new THREE.AudioLoader()
 
     audioLoader.load('./audio/4walls.mp3', (buffer) => {
+      sound.offset = 100
       sound.setBuffer(buffer)
       sound.setLoop(false)
       sound.setVolume(1)
@@ -139,7 +177,13 @@ const glslify = require('glslify');
     })
 
     analyser = new THREE.AudioAnalyser(sound, 64)
-    // analyser.smoothingTimeConstant = 0.0
+    analyser.smoothingTimeConstant = 0.1
+
+    document.addEventListener('mouseup', mouseup)
+    document.addEventListener('mousedown', mousedown)
+    renderer.domElement.addEventListener('wheel', userInteraction)
+    document.addEventListener('touchstart', touchstart)
+    document.addEventListener('touchend', touchend)
 
     let pointsUniforms = THREE.ShaderLib.points.uniforms
 
@@ -179,7 +223,7 @@ const glslify = require('glslify');
         uniforms: uniforms,
         vertexShader: glslify('./glsl/tetra.vert'),
         fragmentShader: glslify('./glsl/tetra.frag'),
-        side: THREE.DoubleSide,
+        // side: THREE.DoubleSide,
         transparent: true,
         wireframe: true
       })
@@ -197,6 +241,37 @@ const glslify = require('glslify');
     }
 
     window.addEventListener('resize', onWindowResize, false)
+  }
+
+  function animateCamPos () {
+    if (camMovementTriggered !== false) {
+      return
+    }
+
+    if (userInteracting) {
+      return
+    }
+
+    let animTime = 40000
+
+    cameraAnimating = true
+
+    camMovementTriggered = true
+
+    let to = new THREE.Vector3(0, Math.random() * 6, Math.random() * 6)
+
+    camMoveTween = new TWEEN.Tween(camera.position)
+      .to(to, animTime)
+      .onUpdate(function () {
+        camera.position.set(this.x, this.y, this.z)
+        camera.lookAt(new THREE.Vector3(0, 0, 0))
+      })
+      .onComplete(() => {
+        camMovementTriggered = false
+        cameraAnimating = false
+      })
+      .easing(defaultCamEasing)
+      .start()
   }
 
   function onWindowResize () {
@@ -348,8 +423,6 @@ const glslify = require('glslify');
       growthPoint = 18
     }
 
-   
-
     if (currentFrame !== 0 && currentFrame % growthPoint === 0) {
       if (typeof choose[channel] === 'undefined') {
         choose[channel] = []
@@ -382,10 +455,13 @@ const glslify = require('glslify');
 
   function animate () {
     movementRate += clock.getDelta()
-
     currentFrame++
 
-    controls.update()
+    if (!cameraAnimating) {
+      controls.update()
+    }
+
+    TWEEN.update()
 
     if (sound.isPlaying) {
       if (!started) {
@@ -441,6 +517,10 @@ const glslify = require('glslify');
             materials[channel].uniforms.uFreq.value = Math.pow(freqData[channel + 2], 10) * 0.0000000000000000000001
             pointMaterials[channel].uniforms.uFreq.value = Math.pow(freqData[channel + 2], 10) * 0.0000000000000000000001
             break
+        }
+
+        if (Math.pow(freqData[2], 10) > 1000000000000000000000000) {
+          animateCamPos()
         }
 
         materials[channel].uniforms.uTime.value = currentFrame
