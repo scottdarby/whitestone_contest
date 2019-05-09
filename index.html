@@ -2,6 +2,7 @@
 	<head>
 		<title>Scott Darby &#9642; TetraHelix Audio-Visualiser</title>
 		<link href="https://fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet">
+		<meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
 		<style>
 
 			* {
@@ -17,7 +18,6 @@
 				text-align: center;
 				text-transform: uppercase;
 				letter-spacing: 1px;
-				font-size: 16px!important;
 				background-image: linear-gradient(rgba(255,255,255,.01) 1px, transparent 1px),
 				linear-gradient(90deg, rgba(255,255,255,.01) 1px, transparent 1px),
 				linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px),
@@ -35,9 +35,48 @@
 			}
 
 			h1 {
-				font-size: 16px!important;
+				font-size: 16px;
 				font-weight: 300;
 				padding: 0 0 30vh;
+			}
+
+			@media only screen and (max-width: 767px) {
+				h1 {
+					font-size: 4.7vw;
+				}
+			}
+
+			.console-text {
+				white-space: nowrap;
+				overflow: hidden; 
+				position: relative;
+				animation: animated-text 1.5s steps(30, end) 1s 1 normal both
+			}
+			
+			.cursor {
+				border-bottom: solid 2px rgba(255,255,255,.75);
+				position: absolute;
+				right: -7px;
+				width: 15px;
+				opacity: 1.0;
+				animation: animated-cursor 400ms steps(30, end) infinite, hide 5s forwards;
+			}
+
+
+			@keyframes animated-text {
+				from {width: 0%;}
+				to {width: 100%;}
+			}
+
+			@keyframes animated-cursor {
+				from {border-bottom-color: rgba(255,255,255,.75);}
+				to {border-bottom-color: transparent;}
+			}
+
+			@keyframes hide {
+				0% {opacity: 1.0;}
+				90% {opacity: 1.0;}
+				100% {opacity: 0.0;}
 			}
 
 			.container {
@@ -52,7 +91,6 @@
 				text-align: center;
 				justify-content: center;
 				font-weight: 300;
-				animation : blur-in 2.5s ease-in;
 				z-index: 2;
 				opacity: 1;
 			}
@@ -61,10 +99,13 @@
 				text-decoration: none;
 				color: #bbbbbb;
 			}
+			
+			@media only screen and (max-width: 767px) {
+
+			}
 
 			.hide {
 				opacity: 0;
-				/* display: none!important; */
 				transition: opacity 2s;
 				visibility: hidden;
 			}
@@ -81,12 +122,19 @@
 				align-items: center;
 				justify-content: center;
 				font-weight: 300;
-				animation : blur-in 2.5s ease-in;
+				animation: flicker 0.3s infinite;
 				z-index: 1;
 			}
 
 			#contact {
 				padding: 30vh 0 0 0;
+				animation: flicker 10s infinite;
+			}
+
+			@media only screen and (max-width: 767px) {
+				#contact {
+					font-size: 18px;
+				}
 			}
 
 			#contact a {
@@ -197,13 +245,13 @@
 					opacity: 1.0;
 				}
 				25% {
-					opacity: 0.6;
+					opacity: 0.4;
 				}
 				50% {
 					opacity: 1.0;
 				}
 				75% {
-					opacity: 0.6;
+					opacity: 0.5;
 				}
 				100% {
 					opacity: 1.0;
@@ -215,7 +263,7 @@
 	<body>
 		<div class="container">
 			<div class="container-inner">
-				<h1>TetraHelix &#9642; Audio-Visualiser</h1>
+				<h1 class="console-text">TetraHelix &#9642; Audio-Visualiser<div class="cursor"></div></h1>
 				<div id="button-container">
 					<span class="tl"></span>
 					<span class="tr"></span>
@@ -226,7 +274,7 @@
 						<a class="start" id="start" href="javascript:void(0);">START</a>
 					</div>
 				</div>
-				<p id="contact"><a href="https://scottdarby.com" target="_blank">scottdarby.com</a></p>
+				<p id="contact"><a class="console-text" href="https://scottdarby.com" target="_blank">scottdarby.com</a></p>
 			</div>
 		</div>
 		<div id="loader" class="hide">
