@@ -150,11 +150,11 @@ const glslify = require('glslify');
     scene = new THREE.Scene()
 
     camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 300)
-    camera.position.set(0, 0, 2.3)
+    camera.position.set(0, 0, 1.8)
     scene.add(camera)
 
     controls = new OrbitControls(camera, renderer.domElement)
-    controls.minDistance = 1
+    controls.minDistance = 0.5
     controls.maxDistance = 200
     controls.enablePan = false
     controls.zoomSpeed = 0.7
@@ -169,7 +169,7 @@ const glslify = require('glslify');
     let audioLoader = new THREE.AudioLoader()
 
     audioLoader.load('./audio/4walls.mp3', (buffer) => {
-      sound.offset = 100
+      sound.offset = 0
       sound.setBuffer(buffer)
       sound.setLoop(false)
       sound.setVolume(1)
@@ -252,13 +252,13 @@ const glslify = require('glslify');
       return
     }
 
-    let animTime = 40000
+    let animTime = 5000 + Math.random() * 30000
 
     cameraAnimating = true
 
     camMovementTriggered = true
 
-    let to = new THREE.Vector3(0, Math.random() * 6, Math.random() * 6)
+    let to = new THREE.Vector3(0, Math.random() * 4, Math.random() * 3)
 
     camMoveTween = new TWEEN.Tween(camera.position)
       .to(to, animTime)
