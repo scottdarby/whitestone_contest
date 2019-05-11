@@ -5,6 +5,7 @@ const OrbitControls = OrbitConstructor(THREE)
 const glslify = require('glslify');
 
 (function () {
+  let holoplay
   let renderer
   let scene
   let objectMeshes1 = []
@@ -140,8 +141,6 @@ const glslify = require('glslify');
       antialias: true
     })
 
-    renderer.autoClear = false
-
     renderer.toneMapping = THREE.LinearToneMapping
 
     renderer.setSize(window.innerWidth, window.innerHeight)
@@ -163,7 +162,6 @@ const glslify = require('glslify');
     controls.dampingFactor = 0.04
 
     let listener = new THREE.AudioListener()
-    camera.add(listener)
 
     sound = new THREE.Audio(listener)
     let audioLoader = new THREE.AudioLoader()
@@ -241,6 +239,8 @@ const glslify = require('glslify');
     }
 
     window.addEventListener('resize', onWindowResize, false)
+
+    holoplay = new HoloPlay(scene, camera, renderer)
   }
 
   function animateCamPos () {
@@ -537,7 +537,9 @@ const glslify = require('glslify');
       }
     }
 
-    renderer.render(scene, camera)
+    // renderer.render(scene, camera)
+    // holoplay.render(scene, camera, renderer)
+    holoplay.render()
 
     window.requestAnimationFrame(animate)
   }
