@@ -24,20 +24,20 @@ const glslify = require('glslify');
   let freqData = null
   let materials = []
   let pointMaterials = []
-  let colorArray = []
+  // let colorArray = []
   const channelCount = 15
+  let verticeCount = []
   let allVertices = []
-  let allFaces = []
+  let bufferSize = 5000
   let initVerticeArray = [
-    new THREE.Vector3(0, 0, 0),
-    new THREE.Vector3(0, 0, 0.001),
-    new THREE.Vector3(0, 0.001, 0.001),
-    new THREE.Vector3(0, 0.001, 0.001)
+    0, 0, 0,
+    0, 0, 0.001,
+    0, 0.001, 0.001
   ]
-  let initFaceArray = []
-  for (let index = 0; index < 250; index++) {
-    initFaceArray.push(new THREE.Face3(0, 1, 2))
-  }
+  // let initFaceArray = []
+  // for (let index = 0; index < 250; index++) {
+  //   initFaceArray.push(new THREE.Face3(0, 1, 2))
+  // }
   let currentFrame = 0
   let choose = []
   let colours = []
@@ -285,20 +285,19 @@ const glslify = require('glslify');
   }
 
   function createInitialShape (channel, firstRun = false) {
-    allVertices[channel] = []
-    for (let i = 0; i < initVerticeArray.length; i++) {
-      allVertices[channel].push(initVerticeArray[i])
-    }
-
-    allFaces[channel] = []
-    for (let i = 0; i < initFaceArray.length; i++) {
-      allFaces[channel].push(initFaceArray[i])
-    }
-
     if (firstRun) {
-      geometry = new THREE.Geometry()
-      geometry.vertices = initVerticeArray
-      geometry.faces = initFaceArray
+      allVertices[channel] = new Float32Array(bufferSize * 3)
+
+      for (let i = 0; i < initVerticeArray.length; i++) {
+        allVertices[channel][i] = initVerticeArray[i]
+      }
+
+      geometry = new THREE.BufferGeometry()
+
+      let position = new THREE.BufferAttribute(allVertices[channel], 3)
+
+      geometry.addAttribute('position', position)
+
       objectMeshes1[channel] = new THREE.Mesh(geometry, materials[channel])
       objectMeshes1[channel].frustumCulled = false
       scene.add(objectMeshes1[channel])
@@ -340,8 +339,13 @@ const glslify = require('glslify');
       scene.add(objectPoints4[channel])
     }
 
-    initFaces[channel] = []
-    initFaces[channel] = initFaceArray[1]
+    initFaces[channel] = [
+      0, 1, 2,
+      3, 4, 5,
+      6, 7, 8
+    ]
+
+    verticeCount[channel] = 9
   }
 
   function grow (currentFace, channel) {
@@ -376,12 +380,28 @@ const glslify = require('glslify');
     }
 
     // get center point of face
-    let faceVerticeA = allVertices[channel][currentFace['a']]
-    let faceVerticeB = allVertices[channel][currentFace['b']]
-    let faceVerticeC = allVertices[channel][currentFace['c']]
-    let faceCenterX = (faceVerticeA['x'] + faceVerticeB['x'] + faceVerticeC['x']) * 0.3333333333333333
-    let faceCenterY = (faceVerticeA['y'] + faceVerticeB['y'] + faceVerticeC['y']) * 0.3333333333333333
-    let faceCenterZ = (faceVerticeA['z'] + faceVerticeB['z'] + faceVerticeC['z']) * 0.3333333333333333
+    let faceVerticeA = new THREE.Vector3(
+      allVertices[channel][currentFace[0]],
+      allVertices[channel][currentFace[1]],
+      allVertices[channel][currentFace[2]]
+    )
+
+    let faceVerticeB = new THREE.Vector3(
+      allVertices[channel][currentFace[3]],
+      allVertices[channel][currentFace[4]],
+      allVertices[channel][currentFace[5]]
+    )
+
+    let faceVerticeC = new THREE.Vector3(
+      allVertices[channel][currentFace[6]],
+      allVertices[channel][currentFace[7]],
+      allVertices[channel][currentFace[8]]
+    )
+
+    let faceCenterX = (faceVerticeA.x + faceVerticeB.x + faceVerticeC.x) * 0.3333333333333333
+    let faceCenterY = (faceVerticeA.y + faceVerticeB.y + faceVerticeC.y) * 0.3333333333333333
+    let faceCenterZ = (faceVerticeA.z + faceVerticeB.z + faceVerticeC.z) * 0.3333333333333333
+
     let centerFaceVertice = new THREE.Vector3(faceCenterX, faceCenterY, faceCenterZ)
 
     // get face normal
@@ -393,34 +413,67 @@ const glslify = require('glslify');
     cb.normalize()
 
     centerFaceVertice.add(cb.multiplyScalar(growthFactor))
-    allVertices[channel].push(centerFaceVertice)
 
-    let newFaces = [
-      new THREE.Face3(currentFace['a'], currentFace['c'], allVertices[channel].length - 1),
-      new THREE.Face3(currentFace['a'], currentFace['b'], allVertices[channel].length - 1),
-      new THREE.Face3(currentFace['b'], currentFace['c'], allVertices[channel].length - 1)
-    ]
+    allVertices[channel][verticeCount[channel] + 0] = faceVerticeA.x
+    allVertices[channel][verticeCount[channel] + 1] = faceVerticeA.y
+    allVertices[channel][verticeCount[channel] + 2] = faceVerticeA.z
 
-    allFaces[channel][allFaces[channel].length - 1] = newFaces[0]
+    allVertices[channel][verticeCount[channel] + 3] = faceVerticeC.x
+    allVertices[channel][verticeCount[channel] + 4] = faceVerticeC.y
+    allVertices[channel][verticeCount[channel] + 5] = faceVerticeC.z
 
-    for (let i = 1; i < newFaces.length; i++) {
-      allFaces[channel].push(newFaces[i])
+    allVertices[channel][verticeCount[channel] + 6] = centerFaceVertice.x
+    allVertices[channel][verticeCount[channel] + 7] = centerFaceVertice.y
+    allVertices[channel][verticeCount[channel] + 8] = centerFaceVertice.z
+
+    // --
+
+    allVertices[channel][verticeCount[channel] + 9] = faceVerticeA.x
+    allVertices[channel][verticeCount[channel] + 10] = faceVerticeA.y
+    allVertices[channel][verticeCount[channel] + 11] = faceVerticeA.z
+
+    allVertices[channel][verticeCount[channel] + 12] = faceVerticeB.x
+    allVertices[channel][verticeCount[channel] + 13] = faceVerticeB.y
+    allVertices[channel][verticeCount[channel] + 14] = faceVerticeB.z
+
+    allVertices[channel][verticeCount[channel] + 15] = centerFaceVertice.x
+    allVertices[channel][verticeCount[channel] + 16] = centerFaceVertice.y
+    allVertices[channel][verticeCount[channel] + 17] = centerFaceVertice.z
+
+    // --
+
+    allVertices[channel][verticeCount[channel] + 18] = faceVerticeB.x
+    allVertices[channel][verticeCount[channel] + 19] = faceVerticeB.y
+    allVertices[channel][verticeCount[channel] + 20] = faceVerticeB.z
+
+    allVertices[channel][verticeCount[channel] + 21] = faceVerticeC.x
+    allVertices[channel][verticeCount[channel] + 22] = faceVerticeC.y
+    allVertices[channel][verticeCount[channel] + 23] = faceVerticeC.z
+
+    allVertices[channel][verticeCount[channel] + 24] = centerFaceVertice.x
+    allVertices[channel][verticeCount[channel] + 25] = centerFaceVertice.y
+    allVertices[channel][verticeCount[channel] + 26] = centerFaceVertice.z
+
+    if (verticeCount[channel] + 27 > bufferSize * 3) {
+      verticeCount[channel] = 27
+    } else {
+      verticeCount[channel] += 27
     }
 
-    allFaces[channel].shift()
-    allFaces[channel].shift()
+    let start = verticeCount[channel] - (bufferSize)
 
-    objectMeshes1[channel].geometry.colors = colorArray
+    if (start < 0) {
+      start = 0
+    }
 
-    objectMeshes1[channel].geometry.vertices = allVertices[channel]
-    objectMeshes1[channel].geometry.faces = allFaces[channel]
-    objectMeshes1[channel].geometry.verticesNeedUpdate = true
-    objectMeshes1[channel].geometry.elementsNeedUpdate = true
+    objectMeshes1[channel].geometry.setDrawRange(start, verticeCount[channel])
+
+    objectMeshes1[channel].geometry.attributes.position.needsUpdate = true
 
     let growthPoint = Math.ceil(movementRate * 0.045) + 4
 
-    if (growthPoint > 18) {
-      growthPoint = 18
+    if (growthPoint > 20) {
+      growthPoint = 20
     }
 
     if (currentFrame !== 0 && currentFrame % growthPoint === 0) {
@@ -428,9 +481,12 @@ const glslify = require('glslify');
         choose[channel] = []
       }
 
-      choose[channel] = Math.ceil((Math.random() * allFaces[channel].length - 1) * 0.3)
-
-      initFaces[channel] = allFaces[channel][allFaces[channel].length - choose[channel]]
+      choose[channel] = verticeCount[channel] - ((Math.round(Math.random() * (verticeCount[channel] * 0.05)))) * 9
+      initFaces[channel] = [
+        choose[channel] + 0, choose[channel] + 1, choose[channel] + 2,
+        choose[channel] + 3, choose[channel] + 4, choose[channel] + 5,
+        choose[channel] + 6, choose[channel] + 7, choose[channel] + 8
+      ]
 
       if (typeof notResetCount[channel] === 'undefined') {
         notResetCount[channel] = 0
@@ -449,11 +505,17 @@ const glslify = require('glslify');
         }
       }
     } else {
-      initFaces[channel] = allFaces[channel][allFaces[channel].length - 1]
+      initFaces[channel] = [
+        verticeCount[channel] - 9, verticeCount[channel] - 8, verticeCount[channel] - 7,
+        verticeCount[channel] - 6, verticeCount[channel] - 5, verticeCount[channel] - 4,
+        verticeCount[channel] - 3, verticeCount[channel] - 2, verticeCount[channel] - 1
+      ]
     }
   }
 
   function animate () {
+    window.requestAnimationFrame(animate)
+
     movementRate += clock.getDelta()
     currentFrame++
 
@@ -540,7 +602,5 @@ const glslify = require('glslify');
     // renderer.render(scene, camera)
     // holoplay.render(scene, camera, renderer)
     holoplay.render()
-
-    window.requestAnimationFrame(animate)
   }
 })()
