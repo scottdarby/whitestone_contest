@@ -23,7 +23,6 @@ const glslify = require('glslify');
   let freqData = null
   let materials = []
   let pointMaterials = []
-  // let colorArray = []
   const channelCount = 15
   let verticeCount = []
   let allVertices = []
@@ -33,10 +32,6 @@ const glslify = require('glslify');
     0, 0, 0.001,
     0, 0.001, 0.001
   ]
-  // let initFaceArray = []
-  // for (let index = 0; index < 250; index++) {
-  //   initFaceArray.push(new THREE.Face3(0, 1, 2))
-  // }
   let currentFrame = 0
   let choose = []
   let colours = []
@@ -284,7 +279,6 @@ const glslify = require('glslify');
   }
 
   function createInitialShape (channel, firstRun = false) {
-    // console.log('createInitialShape')
     if (firstRun) {
       allVertices[channel] = new Float32Array(bufferSize * 3)
 
@@ -414,8 +408,6 @@ const glslify = require('glslify');
 
     centerFaceVertice.add(cb.multiplyScalar(growthFactor))
 
-    // console.log(verticeCount[channel])
-
     allVertices[channel][verticeCount[channel] + 0] = faceVerticeA.x
     allVertices[channel][verticeCount[channel] + 1] = faceVerticeA.y
     allVertices[channel][verticeCount[channel] + 2] = faceVerticeA.z
@@ -500,7 +492,6 @@ const glslify = require('glslify');
         createInitialShape(channel)
       } else {
         if (choose[channel] % 20 === 0) {
-          console.log('asdf')
           notResetCount[channel] = 0
           createInitialShape(channel)
         } else {
