@@ -24,20 +24,15 @@ const glslify = require('glslify');
   let freqData = null
   let materials = []
   let pointMaterials = []
-  // let colorArray = []
   const channelCount = 15
   let verticeCount = []
   let allVertices = []
-  let bufferSize = 5000
+  let bufferSize = 1000
   let initVerticeArray = [
     0, 0, 0,
     0, 0, 0.001,
     0, 0.001, 0.001
   ]
-  // let initFaceArray = []
-  // for (let index = 0; index < 250; index++) {
-  //   initFaceArray.push(new THREE.Face3(0, 1, 2))
-  // }
   let currentFrame = 0
   let choose = []
   let colours = []
@@ -195,7 +190,7 @@ const glslify = require('glslify');
       value: 0
     }
 
-    pointsUniforms.size.value = 50.0
+    pointsUniforms.size.value = 40.0
 
     let shaderSource = THREE.ShaderLib['basic']
 
@@ -221,9 +216,9 @@ const glslify = require('glslify');
         uniforms: uniforms,
         vertexShader: glslify('./glsl/tetra.vert'),
         fragmentShader: glslify('./glsl/tetra.frag'),
-        // side: THREE.DoubleSide,
         transparent: true,
         wireframe: true
+        // blending: THREE.AdditiveBlending
       })
 
       pointMaterials[channel] = new THREE.ShaderMaterial({
@@ -342,10 +337,16 @@ const glslify = require('glslify');
     initFaces[channel] = [
       0, 1, 2,
       3, 4, 5,
-      6, 7, 8
+      6, 7, 8,
+      9, 10, 11,
+      12, 13, 14,
+      15, 16, 17,
+      18, 19, 20,
+      21, 22, 23,
+      24, 25, 26
     ]
 
-    verticeCount[channel] = 9
+    verticeCount[channel] = 27
   }
 
   function grow (currentFace, channel) {
@@ -414,9 +415,37 @@ const glslify = require('glslify');
 
     centerFaceVertice.add(cb.multiplyScalar(growthFactor))
 
-    allVertices[channel][verticeCount[channel] + 0] = faceVerticeA.x
-    allVertices[channel][verticeCount[channel] + 1] = faceVerticeA.y
-    allVertices[channel][verticeCount[channel] + 2] = faceVerticeA.z
+    allVertices[channel][verticeCount[channel] - 18] = faceVerticeA.x
+    allVertices[channel][verticeCount[channel] - 17] = faceVerticeA.y
+    allVertices[channel][verticeCount[channel] - 16] = faceVerticeA.z
+
+    allVertices[channel][verticeCount[channel] - 15] = faceVerticeC.x
+    allVertices[channel][verticeCount[channel] - 14] = faceVerticeC.y
+    allVertices[channel][verticeCount[channel] - 13] = faceVerticeC.z
+
+    allVertices[channel][verticeCount[channel] - 12] = centerFaceVertice.x
+    allVertices[channel][verticeCount[channel] - 11] = centerFaceVertice.y
+    allVertices[channel][verticeCount[channel] - 10] = centerFaceVertice.z
+
+    // --
+
+    allVertices[channel][verticeCount[channel] - 9] = faceVerticeA.x
+    allVertices[channel][verticeCount[channel] - 8] = faceVerticeA.y
+    allVertices[channel][verticeCount[channel] - 7] = faceVerticeA.z
+
+    allVertices[channel][verticeCount[channel] - 6] = faceVerticeB.x
+    allVertices[channel][verticeCount[channel] - 5] = faceVerticeB.y
+    allVertices[channel][verticeCount[channel] - 4] = faceVerticeB.z
+
+    allVertices[channel][verticeCount[channel] - 3] = centerFaceVertice.x
+    allVertices[channel][verticeCount[channel] - 2] = centerFaceVertice.y
+    allVertices[channel][verticeCount[channel] - 1] = centerFaceVertice.z
+
+    // --
+
+    allVertices[channel][verticeCount[channel] + 0] = faceVerticeB.x
+    allVertices[channel][verticeCount[channel] + 1] = faceVerticeB.y
+    allVertices[channel][verticeCount[channel] + 2] = faceVerticeB.z
 
     allVertices[channel][verticeCount[channel] + 3] = faceVerticeC.x
     allVertices[channel][verticeCount[channel] + 4] = faceVerticeC.y
@@ -426,51 +455,17 @@ const glslify = require('glslify');
     allVertices[channel][verticeCount[channel] + 7] = centerFaceVertice.y
     allVertices[channel][verticeCount[channel] + 8] = centerFaceVertice.z
 
-    // --
-
-    allVertices[channel][verticeCount[channel] + 9] = faceVerticeA.x
-    allVertices[channel][verticeCount[channel] + 10] = faceVerticeA.y
-    allVertices[channel][verticeCount[channel] + 11] = faceVerticeA.z
-
-    allVertices[channel][verticeCount[channel] + 12] = faceVerticeB.x
-    allVertices[channel][verticeCount[channel] + 13] = faceVerticeB.y
-    allVertices[channel][verticeCount[channel] + 14] = faceVerticeB.z
-
-    allVertices[channel][verticeCount[channel] + 15] = centerFaceVertice.x
-    allVertices[channel][verticeCount[channel] + 16] = centerFaceVertice.y
-    allVertices[channel][verticeCount[channel] + 17] = centerFaceVertice.z
-
-    // --
-
-    allVertices[channel][verticeCount[channel] + 18] = faceVerticeB.x
-    allVertices[channel][verticeCount[channel] + 19] = faceVerticeB.y
-    allVertices[channel][verticeCount[channel] + 20] = faceVerticeB.z
-
-    allVertices[channel][verticeCount[channel] + 21] = faceVerticeC.x
-    allVertices[channel][verticeCount[channel] + 22] = faceVerticeC.y
-    allVertices[channel][verticeCount[channel] + 23] = faceVerticeC.z
-
-    allVertices[channel][verticeCount[channel] + 24] = centerFaceVertice.x
-    allVertices[channel][verticeCount[channel] + 25] = centerFaceVertice.y
-    allVertices[channel][verticeCount[channel] + 26] = centerFaceVertice.z
-
-    if (verticeCount[channel] + 27 > bufferSize * 3) {
+    if (verticeCount[channel] + 9 > bufferSize * 3) {
       verticeCount[channel] = 27
     } else {
-      verticeCount[channel] += 27
+      verticeCount[channel] += 9
     }
 
-    let start = verticeCount[channel] - (bufferSize)
-
-    if (start < 0) {
-      start = 0
-    }
-
-    objectMeshes1[channel].geometry.setDrawRange(start, verticeCount[channel])
+    objectMeshes1[channel].geometry.setDrawRange(0, verticeCount[channel] * 0.33333333)
 
     objectMeshes1[channel].geometry.attributes.position.needsUpdate = true
 
-    let growthPoint = Math.ceil(movementRate * 0.045) + 4
+    let growthPoint = (Math.ceil(movementRate * 0.045)) + 4
 
     if (growthPoint > 20) {
       growthPoint = 20
