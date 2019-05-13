@@ -14,5 +14,5 @@ void main() {
 	float dist = length(uv);
 	vec3 color = vec3(circle(dist, 0.9));
 	color *= sin((dist * 100.0) - (uTime * 0.05));
-	gl_FragColor = vec4( color, clamp(uFreq, 0.0, 0.02) );
+	gl_FragColor = vec4( color, clamp(uFreq, 0.0, 0.1) );
 }
