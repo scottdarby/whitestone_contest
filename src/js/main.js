@@ -164,7 +164,7 @@ const glslify = require('glslify');
     let audioLoader = new THREE.AudioLoader()
 
     audioLoader.load('./audio/4walls.mp3', (buffer) => {
-      sound.offset = 100
+      sound.offset = 0
       sound.setBuffer(buffer)
       sound.setLoop(false)
       sound.setVolume(1)
