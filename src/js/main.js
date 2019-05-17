@@ -24,7 +24,7 @@ const glslify = require('glslify');
   let freqData = null
   let materials = []
   let pointMaterials = []
-  const channelCount = 15
+  const channelCount = 12
   let verticeCount = []
   let allVertices = []
   let bufferSize = 1000
@@ -136,7 +136,10 @@ const glslify = require('glslify');
       antialias: true
     })
 
-    renderer.toneMapping = THREE.LinearToneMapping
+    // renderer.autoClear = false
+
+    // renderer.toneMapping = THREE.ACESFilmicToneMapping
+    // renderer.toneMappingExposure = 0.5
 
     renderer.setSize(window.innerWidth, window.innerHeight)
     document.body.appendChild(renderer.domElement)
@@ -148,7 +151,7 @@ const glslify = require('glslify');
     scene.add(camera)
 
     controls = new OrbitControls(camera, renderer.domElement)
-    controls.minDistance = 0.5
+    controls.minDistance = 1.5
     controls.maxDistance = 200
     controls.enablePan = false
     controls.zoomSpeed = 0.7
@@ -162,7 +165,7 @@ const glslify = require('glslify');
     let audioLoader = new THREE.AudioLoader()
 
     audioLoader.load('./audio/4walls.mp3', (buffer) => {
-      sound.offset = 0
+      sound.offset = 100
       sound.setBuffer(buffer)
       sound.setLoop(false)
       sound.setVolume(1)
@@ -253,7 +256,7 @@ const glslify = require('glslify');
 
     camMovementTriggered = true
 
-    let to = new THREE.Vector3(0, Math.random() * 4, Math.random() * 3)
+    let to = new THREE.Vector3(0, Math.max(Math.random() * 4, 1.5), Math.max(Math.random() * 3, 1.5))
 
     camMoveTween = new TWEEN.Tween(camera.position)
       .to(to, animTime)
